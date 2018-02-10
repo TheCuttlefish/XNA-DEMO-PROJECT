@@ -39,6 +39,11 @@ namespace Shooter
         Texture2D explosionTexture;
         List<Animation> explosions;
 
+        //Number that holds the player score
+        int score;
+        // The font used to display UI elements
+        SpriteFont font;
+
         // The sound that is played when a laser is fired
         SoundEffect laserSound;
 
@@ -70,6 +75,8 @@ namespace Shooter
         protected override void Initialize()
         {
 
+            //Set player's score to zero
+            score = 0;
 
             explosions = new List<Animation>();
 
@@ -126,7 +133,8 @@ namespace Shooter
             // Load the laser and explosion sound effect
             laserSound = Content.Load<SoundEffect>("sound/laserFire");
             explosionSound = Content.Load<SoundEffect>("sound/explosion");
-
+            // Load the score font
+            font = Content.Load<SpriteFont>("gameFont");
             // Start the music right away
             PlayMusic(gameplayMusic);
         }
@@ -171,6 +179,8 @@ namespace Shooter
         private void UpdatePlayer(GameTime gameTime)
         {
     
+
+
             // Use the Keyboard / Dpad
             if (currentKeyboardState.IsKeyDown(Keys.Left) || currentKeyboardState.IsKeyDown(Keys.A))
             {
@@ -214,6 +224,17 @@ namespace Shooter
             // Make sure that the player does not go out of bounds
             player.Position.X = MathHelper.Clamp(player.Position.X, 0, GraphicsDevice.Viewport.Width - player.Width);
             player.Position.Y = MathHelper.Clamp(player.Position.Y, 0, GraphicsDevice.Viewport.Height - player.Height);
+
+
+
+            // reset score if player health goes to zero
+            if (player.Health <= 0)
+            {
+                player.Health = 100;
+                score = 0;
+            }
+
+
         }
 
         /// <summary>
@@ -250,6 +271,14 @@ namespace Shooter
             }
             player.Draw(spriteBatch);
 
+
+            // Draw the score
+            spriteBatch.DrawString(font, "score: " + score, new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y), Color.White);
+            // Draw the player health
+            spriteBatch.DrawString(font, "health: " + player.Health, new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y + 30), Color.White);
+
+
+
             spriteBatch.End();
            
             base.Draw(gameTime);
@@ -259,7 +288,7 @@ namespace Shooter
         {
             // Play the explosion sound
             explosionSound.Play();
-
+            
             Animation explosion = new Animation();
             explosion.Initialize(explosionTexture, position, 134, 134, 12, 45, Color.White, 1f, false);
             explosions.Add(explosion);
@@ -426,6 +455,8 @@ namespace Shooter
                     // If not active and health <= 0
                     if (enemies[i].Health <= 0)
                     {
+                        //Add to the player's score
+                        score += enemies[i].Value;
                         // Add an explosion
                         AddExplosion( new Vector2(enemies[i].Position.X - 50, enemies[i].Position.Y - 25));
                     }
