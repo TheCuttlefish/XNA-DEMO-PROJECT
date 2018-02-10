@@ -44,8 +44,13 @@ namespace Shooter
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             // Load the player resources 
-            Vector2 playerPosition = new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2);
-            player.Initialize(Content.Load<Texture2D>("player"), playerPosition);
+            Animation playerAnimation = new Animation();
+            Texture2D playerTexture = Content.Load<Texture2D>("shipAnimation");
+            playerAnimation.Initialize(playerTexture, Vector2.Zero, 115, 69, 8, 30, Color.White, 1f, true);
+            
+
+            Vector2 playerPosition = new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height/2);
+            player.Initialize(playerAnimation, playerPosition);
         }
 
         protected override void UnloadContent()
@@ -69,8 +74,9 @@ namespace Shooter
  
             // Read the current state of the keyboard and gamepad and store it
             currentKeyboardState = Keyboard.GetState();
-          
+
             //Update the player
+            player.Update(gameTime);
             UpdatePlayer(gameTime);
             base.Update(gameTime);
         }
@@ -96,7 +102,10 @@ namespace Shooter
             {
                 player.velocityY -= (player.velocityY + player.velocity_limit) / player.acceleration;
             }
-
+            //drag
+            player.velocityX -= (player.velocityX - 0) / player.drag;
+            player.velocityY -= (player.velocityY - 0) / player.drag;
+            //translating velocity to input
             player.Position.X -= player.velocityX;
             player.Position.Y -= player.velocityY;
             // Make sure that the player does not go out of bounds
@@ -110,7 +119,7 @@ namespace Shooter
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(0.9f, 0.9f, 0.9f));
+            GraphicsDevice.Clear(Color.LightSlateGray);
 
             spriteBatch.Begin();
 
@@ -118,7 +127,6 @@ namespace Shooter
 
             spriteBatch.End();
            
-
             base.Draw(gameTime);
         }
     }
