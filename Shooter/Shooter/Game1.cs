@@ -19,8 +19,7 @@ namespace Shooter
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Player player;
-        // A movement speed for the player
-        float playerMoveSpeed;
+     
         // Keyboard states used to determine key presses
         KeyboardState currentKeyboardState;
         KeyboardState previousKeyboardState;
@@ -36,8 +35,6 @@ namespace Shooter
         {
 
             player = new Player();
-            // Set a constant player move speed
-            playerMoveSpeed = 8.0f;
             base.Initialize();
             
         }
@@ -73,34 +70,35 @@ namespace Shooter
             // Read the current state of the keyboard and gamepad and store it
             currentKeyboardState = Keyboard.GetState();
           
-
-
             //Update the player
             UpdatePlayer(gameTime);
             base.Update(gameTime);
         }
-
+   
+    
         private void UpdatePlayer(GameTime gameTime)
         {
-
+    
             // Use the Keyboard / Dpad
             if (currentKeyboardState.IsKeyDown(Keys.Left) || currentKeyboardState.IsKeyDown(Keys.A))
             {
-                player.Position.X -= playerMoveSpeed;
+                player.velocityX -= (player.velocityX - player.velocity_limit) / player.acceleration;
             }
             if (currentKeyboardState.IsKeyDown(Keys.Right) || currentKeyboardState.IsKeyDown(Keys.D))
             {
-                player.Position.X += playerMoveSpeed;
+                player.velocityX -= (player.velocityX + player.velocity_limit) / player.acceleration;
             }
             if (currentKeyboardState.IsKeyDown(Keys.Up) || currentKeyboardState.IsKeyDown(Keys.W))
             {
-                player.Position.Y -= playerMoveSpeed;
+                player.velocityY -= (player.velocityY - player.velocity_limit) / player.acceleration;
             }
             if (currentKeyboardState.IsKeyDown(Keys.Down) || currentKeyboardState.IsKeyDown(Keys.S))
             {
-                player.Position.Y += playerMoveSpeed;
+                player.velocityY -= (player.velocityY + player.velocity_limit) / player.acceleration;
             }
 
+            player.Position.X -= player.velocityX;
+            player.Position.Y -= player.velocityY;
             // Make sure that the player does not go out of bounds
             player.Position.X = MathHelper.Clamp(player.Position.X, 0, GraphicsDevice.Viewport.Width - player.Width);
             player.Position.Y = MathHelper.Clamp(player.Position.Y, 0, GraphicsDevice.Viewport.Height - player.Height);
@@ -112,7 +110,7 @@ namespace Shooter
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(new Color(0.9f, 0.9f, 0.9f));
 
             spriteBatch.Begin();
 

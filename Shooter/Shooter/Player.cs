@@ -18,6 +18,11 @@ namespace Shooter
         // Amount of hit points that player has
         public int Health;
 
+
+        public float velocityX;
+        public float velocityY;
+        public float acceleration = 20.0f;
+        public float velocity_limit = 5.0f;
         // Get the width of the player ship
         public int Width
         {
@@ -43,6 +48,7 @@ namespace Shooter
 
             // Set the player health
             Health = 100;
+
         }
 
         public void Update()
