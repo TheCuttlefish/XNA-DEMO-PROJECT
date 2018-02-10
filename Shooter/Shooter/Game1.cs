@@ -35,6 +35,10 @@ namespace Shooter
         // The rate of fire of the player laser
         TimeSpan fireTime;
         TimeSpan previousFireTime;
+
+        Texture2D explosionTexture;
+        List<Animation> explosions;
+
         // Parallaxing Layers
         ParallaxingBackground bgLayer1;
         ParallaxingBackground bgLayer2;
@@ -56,6 +60,9 @@ namespace Shooter
  
         protected override void Initialize()
         {
+
+
+            explosions = new List<Animation>();
 
             projectiles = new List<Projectile>();
 
@@ -83,6 +90,8 @@ namespace Shooter
 
         protected override void LoadContent()
         {
+
+            explosionTexture = Content.Load<Texture2D>("explosion");
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             // Load the player resources 
@@ -134,6 +143,7 @@ namespace Shooter
             UpdateEnemies(gameTime);
             UpdateCollision();
             UpdateProjectiles();
+            UpdateExplosions(gameTime);
 
             base.Update(gameTime);
         }
@@ -167,8 +177,8 @@ namespace Shooter
                 {
                     // Reset our current time
                     previousFireTime = gameTime.TotalGameTime;
-
-                    AddProjectile(player.Position + new Vector2(player.Width / 2, player.Height / 2));
+                    
+                    AddProjectile(player.Position + new Vector2(player.Width / 2, (player.Height / 2) + random.Next(-5,5)));
                     //recoil
                     player.velocityX -= (player.velocityX - 5) / 1;
 
@@ -201,7 +211,13 @@ namespace Shooter
             // Draw the moving background
             bgLayer1.Draw(spriteBatch);
             bgLayer2.Draw(spriteBatch);
-            
+
+            // Draw the explosions
+            for (int i = 0; i < explosions.Count; i++)
+            {
+                explosions[i].Draw(spriteBatch);
+            }
+
             // Draw the Enemies
             for (int i = 0; i < enemies.Count; i++)
             {
@@ -218,6 +234,13 @@ namespace Shooter
             spriteBatch.End();
            
             base.Draw(gameTime);
+        }
+
+        private void AddExplosion(Vector2 position)
+        {
+            Animation explosion = new Animation();
+            explosion.Initialize(explosionTexture, position, 134, 134, 12, 45, Color.White, 1f, false);
+            explosions.Add(explosion);
         }
 
         private void AddProjectile(Vector2 position)
@@ -327,6 +350,19 @@ namespace Shooter
                 }
             }
         }
+
+        private void UpdateExplosions(GameTime gameTime)
+        {
+            for (int i = explosions.Count - 1; i >= 0; i--)
+            {
+                explosions[i].Update(gameTime);
+                if (explosions[i].Active == false)
+                {
+                    explosions.RemoveAt(i);
+                }
+            }
+        }
+
         private void UpdateEnemies(GameTime gameTime)
         {
             // Spawn a new enemy enemy every 1.5 seconds
@@ -345,6 +381,14 @@ namespace Shooter
 
                 if (enemies[i].Active == false)
                 {
+
+                    // If not active and health <= 0
+                    if (enemies[i].Health <= 0)
+                    {
+                        // Add an explosion
+                        AddExplosion( new Vector2(enemies[i].Position.X - 50, enemies[i].Position.Y - 25));
+                    }
+
                     enemies.RemoveAt(i);
                 }
             }
