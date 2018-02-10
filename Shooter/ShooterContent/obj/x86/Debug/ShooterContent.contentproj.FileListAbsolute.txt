@@ -1,0 +1,2 @@
+F:\GitHub\XNA DEMO\Shooter\Shooter\ShooterContent\obj\x86\Debug\ShooterContent.contentprojResolveAssemblyReference.cache
+F:\GitHub\XNA shooter\XNA-DEMO-PROJECT\Shooter\ShooterContent\obj\x86\Debug\ShooterContent.contentprojResolveAssemblyReference.cache
