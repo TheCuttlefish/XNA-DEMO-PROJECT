@@ -29,7 +29,12 @@ namespace Shooter
 
         // A random number generator
         Random random;
+        Texture2D projectileTexture;
+        List<Projectile> projectiles;
 
+        // The rate of fire of the player laser
+        TimeSpan fireTime;
+        TimeSpan previousFireTime;
         // Parallaxing Layers
         ParallaxingBackground bgLayer1;
         ParallaxingBackground bgLayer2;
@@ -52,6 +57,10 @@ namespace Shooter
         protected override void Initialize()
         {
 
+            projectiles = new List<Projectile>();
+
+            // Set the laser to fire every quarter second
+            fireTime = TimeSpan.FromSeconds(.15f);
             // Initialize the enemies list
             enemies = new List<Enemy>();
 
@@ -90,7 +99,7 @@ namespace Shooter
             bgLayer2.Initialize(Content, "bgLayer2", GraphicsDevice.Viewport.Width, -2);
 
             enemyTexture = Content.Load<Texture2D>("mineAnimation");
-
+            projectileTexture = Content.Load<Texture2D>("laser");
             mainBackground = Content.Load<Texture2D>("mainbackground");
         }
 
@@ -124,6 +133,7 @@ namespace Shooter
             bgLayer2.Update();
             UpdateEnemies(gameTime);
             UpdateCollision();
+            UpdateProjectiles();
 
             base.Update(gameTime);
         }
@@ -149,6 +159,23 @@ namespace Shooter
             {
                 player.velocityY -= (player.velocityY + player.velocity_limit) / player.acceleration;
             }
+
+            if (currentKeyboardState.IsKeyDown(Keys.Space)){
+
+
+                if (gameTime.TotalGameTime - previousFireTime > fireTime)
+                {
+                    // Reset our current time
+                    previousFireTime = gameTime.TotalGameTime;
+
+                    AddProjectile(player.Position + new Vector2(player.Width / 2, player.Height / 2));
+                    //recoil
+                    player.velocityX -= (player.velocityX - 5) / 1;
+
+                }
+            }
+
+
             //drag
             player.velocityX -= (player.velocityX - 0) / player.drag;
             player.velocityY -= (player.velocityY - 0) / player.drag;
@@ -181,6 +208,11 @@ namespace Shooter
                 enemies[i].Draw(spriteBatch);
             }
 
+            // Draw the Projectiles
+            for (int i = 0; i < projectiles.Count; i++)
+            {
+                projectiles[i].Draw(spriteBatch);
+            }
             player.Draw(spriteBatch);
 
             spriteBatch.End();
@@ -188,6 +220,12 @@ namespace Shooter
             base.Draw(gameTime);
         }
 
+        private void AddProjectile(Vector2 position)
+        {
+            Projectile projectile = new Projectile();
+            projectile.Initialize(GraphicsDevice.Viewport, projectileTexture, position);
+            projectiles.Add(projectile);
+        }
 
         private void AddEnemy()
         {
@@ -209,6 +247,22 @@ namespace Shooter
             // Add the enemy to the active enemies list
             enemies.Add(enemy);
         }
+
+
+        private void UpdateProjectiles()
+        {
+            // Update the Projectiles
+            for (int i = projectiles.Count - 1; i >= 0; i--)
+            {
+                projectiles[i].Update();
+
+                if (projectiles[i].Active == false)
+                {
+                    projectiles.RemoveAt(i);
+                }
+            }
+        }
+
         private void UpdateCollision()
         {
             // Use the Rectangle's built-in intersect function to 
@@ -247,6 +301,30 @@ namespace Shooter
                         player.Active = false;
                 }
 
+            }
+
+
+            // Projectile vs Enemy Collision
+            for (int i = 0; i < projectiles.Count; i++)
+            {
+                for (int j = 0; j < enemies.Count; j++)
+                {
+                    // Create the rectangles we need to determine if we collided with each other
+                    rectangle1 = new Rectangle((int)projectiles[i].Position.X -
+                    projectiles[i].Width / 2, (int)projectiles[i].Position.Y -
+                    projectiles[i].Height / 2, projectiles[i].Width, projectiles[i].Height);
+
+                    rectangle2 = new Rectangle((int)enemies[j].Position.X - enemies[j].Width / 2,
+                    (int)enemies[j].Position.Y - enemies[j].Height / 2,
+                    enemies[j].Width, enemies[j].Height);
+
+                    // Determine if the two objects collided with each other
+                    if (rectangle1.Intersects(rectangle2))
+                    {
+                        enemies[j].Health -= projectiles[i].Damage;
+                        projectiles[i].Active = false;
+                    }
+                }
             }
         }
         private void UpdateEnemies(GameTime gameTime)
