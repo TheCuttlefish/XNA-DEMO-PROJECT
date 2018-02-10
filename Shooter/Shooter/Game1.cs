@@ -19,6 +19,11 @@ namespace Shooter
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Player player;
+        // A movement speed for the player
+        float playerMoveSpeed;
+        // Keyboard states used to determine key presses
+        KeyboardState currentKeyboardState;
+        KeyboardState previousKeyboardState;
 
         public Game1()
         {
@@ -31,6 +36,8 @@ namespace Shooter
         {
 
             player = new Player();
+            // Set a constant player move speed
+            playerMoveSpeed = 8.0f;
             base.Initialize();
             
         }
@@ -59,8 +66,44 @@ namespace Shooter
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
+            // Save the previous state of the keyboard and game pad so we can determinesingle key/button presses
+            
+            previousKeyboardState = currentKeyboardState;
+ 
+            // Read the current state of the keyboard and gamepad and store it
+            currentKeyboardState = Keyboard.GetState();
+          
 
+
+            //Update the player
+            UpdatePlayer(gameTime);
             base.Update(gameTime);
+        }
+
+        private void UpdatePlayer(GameTime gameTime)
+        {
+
+            // Use the Keyboard / Dpad
+            if (currentKeyboardState.IsKeyDown(Keys.Left) || currentKeyboardState.IsKeyDown(Keys.A))
+            {
+                player.Position.X -= playerMoveSpeed;
+            }
+            if (currentKeyboardState.IsKeyDown(Keys.Right) || currentKeyboardState.IsKeyDown(Keys.D))
+            {
+                player.Position.X += playerMoveSpeed;
+            }
+            if (currentKeyboardState.IsKeyDown(Keys.Up) || currentKeyboardState.IsKeyDown(Keys.W))
+            {
+                player.Position.Y -= playerMoveSpeed;
+            }
+            if (currentKeyboardState.IsKeyDown(Keys.Down) || currentKeyboardState.IsKeyDown(Keys.S))
+            {
+                player.Position.Y += playerMoveSpeed;
+            }
+
+            // Make sure that the player does not go out of bounds
+            player.Position.X = MathHelper.Clamp(player.Position.X, 0, GraphicsDevice.Viewport.Width - player.Width);
+            player.Position.Y = MathHelper.Clamp(player.Position.Y, 0, GraphicsDevice.Viewport.Height - player.Height);
         }
 
         /// <summary>
