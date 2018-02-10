@@ -39,6 +39,15 @@ namespace Shooter
         Texture2D explosionTexture;
         List<Animation> explosions;
 
+        // The sound that is played when a laser is fired
+        SoundEffect laserSound;
+
+        // The sound used when the player or an enemy dies
+        SoundEffect explosionSound;
+
+        // The music played during gameplay
+        Song gameplayMusic;
+
         // Parallaxing Layers
         ParallaxingBackground bgLayer1;
         ParallaxingBackground bgLayer2;
@@ -110,6 +119,16 @@ namespace Shooter
             enemyTexture = Content.Load<Texture2D>("mineAnimation");
             projectileTexture = Content.Load<Texture2D>("laser");
             mainBackground = Content.Load<Texture2D>("mainbackground");
+
+            // Load the music
+            gameplayMusic = Content.Load<Song>("sound/gameMusic");
+
+            // Load the laser and explosion sound effect
+            laserSound = Content.Load<SoundEffect>("sound/laserFire");
+            explosionSound = Content.Load<SoundEffect>("sound/explosion");
+
+            // Start the music right away
+            PlayMusic(gameplayMusic);
         }
 
         protected override void UnloadContent()
@@ -238,6 +257,9 @@ namespace Shooter
 
         private void AddExplosion(Vector2 position)
         {
+            // Play the explosion sound
+            explosionSound.Play();
+
             Animation explosion = new Animation();
             explosion.Initialize(explosionTexture, position, 134, 134, 12, 45, Color.White, 1f, false);
             explosions.Add(explosion);
@@ -245,6 +267,9 @@ namespace Shooter
 
         private void AddProjectile(Vector2 position)
         {
+            // Play the laser sound
+            laserSound.Play();
+
             Projectile projectile = new Projectile();
             projectile.Initialize(GraphicsDevice.Viewport, projectileTexture, position);
             projectiles.Add(projectile);
@@ -362,6 +387,22 @@ namespace Shooter
                 }
             }
         }
+
+        private void PlayMusic(Song song)
+        {
+            // Due to the way the MediaPlayer plays music,
+            // we have to catch the exception. Music will play when the game is not tethered
+            try
+            {
+                // Play the music
+                MediaPlayer.Play(song);
+
+                // Loop the currently playing song
+                MediaPlayer.IsRepeating = true;
+            }
+            catch { }
+        }
+
 
         private void UpdateEnemies(GameTime gameTime)
         {
