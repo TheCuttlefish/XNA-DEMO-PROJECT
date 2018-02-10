@@ -16,6 +16,13 @@ namespace Shooter
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        // Image used to display the static background
+        Texture2D mainBackground;
+
+        // Parallaxing Layers
+        ParallaxingBackground bgLayer1;
+        ParallaxingBackground bgLayer2;
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Player player;
@@ -33,6 +40,8 @@ namespace Shooter
  
         protected override void Initialize()
         {
+            bgLayer1 = new ParallaxingBackground();
+            bgLayer2 = new ParallaxingBackground();
 
             player = new Player();
             base.Initialize();
@@ -51,6 +60,12 @@ namespace Shooter
 
             Vector2 playerPosition = new Vector2(GraphicsDevice.Viewport.TitleSafeArea.X, GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height/2);
             player.Initialize(playerAnimation, playerPosition);
+
+            // Load the parallaxing background
+            bgLayer1.Initialize(Content, "bgLayer1", GraphicsDevice.Viewport.Width, -1);
+            bgLayer2.Initialize(Content, "bgLayer2", GraphicsDevice.Viewport.Width, -2);
+
+            mainBackground = Content.Load<Texture2D>("mainbackground");
         }
 
         protected override void UnloadContent()
@@ -78,6 +93,10 @@ namespace Shooter
             //Update the player
             player.Update(gameTime);
             UpdatePlayer(gameTime);
+            // Update the parallaxing background
+            bgLayer1.Update();
+            bgLayer2.Update();
+
             base.Update(gameTime);
         }
    
@@ -122,7 +141,11 @@ namespace Shooter
             GraphicsDevice.Clear(Color.LightSlateGray);
 
             spriteBatch.Begin();
+            spriteBatch.Draw(mainBackground, Vector2.Zero, Color.White);
 
+            // Draw the moving background
+            bgLayer1.Draw(spriteBatch);
+            bgLayer2.Draw(spriteBatch);
             player.Draw(spriteBatch);
 
             spriteBatch.End();

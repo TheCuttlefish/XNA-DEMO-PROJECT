@@ -21,9 +21,9 @@ namespace Shooter
 
         public float velocityX;
         public float velocityY;
-        public float acceleration = 20.0f;
-        public float velocity_limit = 8.0f;
-        public float drag = 50.0f;
+        public readonly float acceleration = 20.0f;
+        public readonly float velocity_limit = 8.0f;
+        public readonly float drag = 50.0f;
         // Get the width of the player ship
         public int Width
         {
